@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-# DHT Sensor Data-logging to MQTT Temperature channel
-# Mosquitto Broker has to be on MQTT_broker_name
+# DHT Sensor Data-logging to remote MQTT Broker
 
 import sys
 import time
@@ -8,8 +7,8 @@ import Adafruit_DHT
 import paho.mqtt.client as mqtt
 
 
-# >python3 mqtt.dhtsensor.py 'base_topic/temperature' 'base_topic/humidity' 4<
-# Type of sensor: Adafruit_DHT.DHT11, Adafruit_DHT.DHT22, Adafruit_DHT.AM2302
+#   python3 rh_mqtt.py 'DHT22'    'base_topic'   4     5
+#                       Sensor     base topic    Pin   wait seconds
 
 def set_sensor_topics(sensor_str):
     sensor_topics = {

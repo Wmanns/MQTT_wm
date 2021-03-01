@@ -31,8 +31,10 @@ def set_MQTT_broker(MQTT_broker_name, MQTT_Port, MQTT_last_will, wait_secs):
 
 def main():
     if (len(sys.argv) < 2):
-       print ("\n\n Usage: \n python3 mqtt.dhtsensor.py 'base_topic/temperature' 'base_topic/humidity' 4\n")
-       raise  ValueError("python3 mqtt.dhtsensor.py 'DHT22' 'base_topic/temperature' 'base_topic/humidity' 4")
+       print ("\n\n Usage: \n")
+       print (" python3 rh_mqtt.py 'DHT22'    'base_topic'   4     5")
+       print ("                     Sensor     base topic    Pin   wait seconds \n")
+       raise  ValueError("python3 rh_mqtt.py 'DHT22'    'base_topic'   4     5")
 
     sensor_str = sys.argv[1]
     topics =  set_sensor_topics(sensor_str)

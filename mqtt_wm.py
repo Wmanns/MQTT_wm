@@ -16,7 +16,6 @@ def set_sensor_topics(sensor_str):
     }
     return sensor_topics[sensor_str.upper()]
 
-
 def get_sensor_value():
     pass
 
@@ -27,7 +26,6 @@ def set_MQTT_broker(MQTT_broker_name, MQTT_Port, MQTT_last_will, wait_secs):
     mqttc.connect (MQTT_broker_name, MQTT_Port, keepalive = wait_secs + 10)
     mqttc.publish (MQTT_last_will, payload = 'online',  qos = 0, retain = True)
     return mqttc
-
 
 def main():
     if (len(sys.argv) < 2):
@@ -49,13 +47,6 @@ def main():
         wait_secs = int(sys.argv[3])
 
 
-    # temperature_topic = str(sys.argv[2]) # temperature channel
-    # humidity_topic    = str(sys.argv[3]) # humidity    channel
-
-    # print('\nMQTT Temp MSG {0}'.format(temperature_topic))
-    # print('MQTT Humidity MSG {0}'.format(humidity_topic))
-
-
     base_topic        = str(sys.argv[2])
     MQTT_last_will    = base_topic + '/LWT' #Create the last-will-and-testament topic
     print('MQTT LWT MSG {0}\n'.format(MQTT_last_will))
@@ -73,14 +64,9 @@ def main():
         while True:
             # get sensor data
             # humidity, temperature = Adafruit_DHT.read_retry(DHT_TYPE, DHT_PIN)
-            # humidity     = round(humidity, 3)
-            # temperature  = round(temperature, 3)
 
             vals = Adafruit_DHT.read_retry(DHT_TYPE, DHT_PIN)
             
-            # for val, topic in zip (vals, topics):
-            #     print (round(val, 3), topic)
-                
             # Publish
             try:
                 ok = True

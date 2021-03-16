@@ -84,7 +84,7 @@ def main():
                     topic = base_topic + '/' + topic
                     # publish:
                     (result, mid) = mqttc.publish(topic, val)
-                    print (val, '(', topic, ')')
+                    print (val, '(' + topic + ')')
                     ok = ok or (result != 0)
                 
                 if not ok:

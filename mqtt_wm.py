@@ -3,8 +3,11 @@
 
 import sys
 import time
-import Adafruit_DHT
 import paho.mqtt.client as mqtt
+# pip3 install Adafruit-DHT
+import Adafruit_DHT
+# pip3 install bme680
+import bme680
 
 
 #   python3 mqtt_wm.py 'DHT22'    'base_topic'   4     5
@@ -17,6 +20,7 @@ import paho.mqtt.client as mqtt
 # sudo python3 setup.py install
 # cd /home/rh/Adafruit_Python_DHT/examples
 # sudo python3 ./AdafruitDHT.py 11 4    # ≡ DHT11 Pin 4
+
 
 
 def set_sensor_topics(sensor_str):
@@ -39,13 +43,17 @@ def set_MQTT_broker(MQTT_broker_name, MQTT_Port, MQTT_last_will, wait_secs):
 def main():
     if (len(sys.argv) < 2):
         print ("\n\n Usage: ")
-        print (" python3 mqtt_wm.py 'DHT22'    'base_topic'   DHT_PIN     WAIT_SECONDS")
-        print (" python3 mqtt_wm.py 'DHT22'    'base_topic'   4     30")
-        print (" python3 mqtt_wm.py 'DHT22'    $(hostname)   4     30")
-        raise  ValueError("python3 mqtt_wm.py 'DHT22'    'base_topic'   4     30")
+
+        print (" python3 mqtt_wm.py  'Topic'        'Sensor_Type'   DHT_PIN     WAIT_SECONDS")
+        print (" python3 mqtt_wm.py  'base_topic'   'DHT22'         4           30")
+        print (" python3 mqtt_wm.py  $(hostname)    'DHT22'         17          60")
+
+        raise  ValueError("\nMissing parameters?\n")
+
+    base_topic = str(sys.argv[1])
+    sensor_str = sys.argv[2]
     
-    sensor_str = sys.argv[1]
-    topics =  set_sensor_topics(sensor_str)
+    topics     = set_sensor_topics(sensor_str)
     print (topics)
     
     DHT_TYPE   = Adafruit_DHT.DHT22
@@ -57,7 +65,6 @@ def main():
         wait_secs = int(sys.argv[4])
     
     
-    base_topic        = str(sys.argv[2])
     MQTT_last_will    = base_topic + '/LWT' #Create the last-will-and-testament topic
     print('MQTT LWT MSG {0}\n'.format(MQTT_last_will))
     
@@ -78,26 +85,32 @@ def main():
             # get sensor data
             # humidity, temperature = Adafruit_DHT.read_retry(DHT_TYPE, DHT_PIN)
             
-            vals = Adafruit_DHT.read_retry(DHT_TYPE, DHT_PIN)
-            
-            # Publish
             try:
-                ok = True
-                for val, topic in zip (vals, topics):
-                    val   = round(val, 3)
-                    topic = base_topic + '/' + topic
-                    # publish:
-                    (result, mid) = mqttc.publish(topic, val)
-                    print (val, '(' + topic + ')')
-                    ok = ok or (result != 0)
-                
-                if not ok:
-                    raise ValueError('Result for one message was not 0')
-            
+                print ('Try: read_retry')
+                vals = Adafruit_DHT.read_retry(DHT_TYPE, DHT_PIN)
+            # Publish
+                try:
+                    print ('Try: publish')
+                    ok = True
+                    for val, topic in zip (vals, topics):
+                        val   = round(val, 3)
+                        topic = base_topic + '/' + topic
+                        # publish:
+                        (result, mid) = mqttc.publish(topic, val)
+                        print (val, '(' + topic + ')')
+                        ok = ok or (result != 0)
+        
+                    if not ok:
+                        raise ValueError('Result for one message was not 0')
+    
+                except Exception as e:
+                    print('Error: ' + str(e))
+                    continue
+
             except Exception as e:
-                print('Error: ' + str(e))
-                continue
-            
+                print('Error reading sensor data.')
+
+            print ('Sleep: ', wait_secs, 'sec')
             time.sleep(wait_secs)
     
     except Exception as e:

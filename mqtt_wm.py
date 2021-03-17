@@ -39,9 +39,10 @@ def set_MQTT_broker(MQTT_broker_name, MQTT_Port, MQTT_last_will, wait_secs):
 def main():
     if (len(sys.argv) < 2):
         print ("\n\n Usage: ")
-        print (" python3 mqtt_wm.py 'DHT22'    'base_topic'   4     5")
-        print (" python3 mqtt_wm.py 'DHT22'    $(hostname)   4     5")
-        raise  ValueError("python3 mqtt_wm.py 'DHT22'    'base_topic'   4     5")
+        print (" python3 mqtt_wm.py 'DHT22'    'base_topic'   DHT_PIN     WAIT_SECONDS")
+        print (" python3 mqtt_wm.py 'DHT22'    'base_topic'   4     30")
+        print (" python3 mqtt_wm.py 'DHT22'    $(hostname)   4     30")
+        raise  ValueError("python3 mqtt_wm.py 'DHT22'    'base_topic'   4     30")
     
     sensor_str = sys.argv[1]
     topics =  set_sensor_topics(sensor_str)
@@ -50,10 +51,10 @@ def main():
     DHT_TYPE   = Adafruit_DHT.DHT22
     DHT_PIN    = sys.argv[3]
     
-    wait_secs      = 1
+    wait_secs      = 60
     
-    if (len(sys.argv) > 2):
-        wait_secs = int(sys.argv[3])
+    if (len(sys.argv) > 3):
+        wait_secs = int(sys.argv[4])
     
     
     base_topic        = str(sys.argv[2])
@@ -65,8 +66,11 @@ def main():
                             MQTT_last_will = MQTT_last_will,
                             wait_secs= wait_secs)
     
+    print ('\n###################')
+    print ('Topics:')
     for topic in topics:
         print (base_topic + '/' + topic)
+    print ('###################\n')
     
     
     try:

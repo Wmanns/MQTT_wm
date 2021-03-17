@@ -4,23 +4,14 @@
 import sys
 import time
 import paho.mqtt.client as mqtt
-# pip3 install Adafruit-DHT
-import Adafruit_DHT
-# pip3 install bme680
-import bme680
-
-
-#   python3 mqtt_wm.py 'DHT22'    'base_topic'   4     5
-#                       Sensor     base topic    Pin   wait seconds
 
 # DHT11, DHT22
-# git clone https://github.com/adafruit/Adafruit_Python_DHT.git
-# cd Adafruit_Python_DHT
-# sudo apt-get install build-essential python-dev python-openssl
-# sudo python3 setup.py install
-# cd /home/rh/Adafruit_Python_DHT/examples
-# sudo python3 ./AdafruitDHT.py 11 4    # ≡ DHT11 Pin 4
+# pip3 install Adafruit-DHT
+import Adafruit_DHT
 
+# bme680
+# pip3 install bme680
+import bme680
 
 
 def set_sensor_topics(sensor_str):
@@ -28,6 +19,14 @@ def set_sensor_topics(sensor_str):
         'DHT22': ['DHT22/Feuchtigkeit', 'DHT22/Temperatur']
     }
     return sensor_topics[sensor_str.upper()]
+
+def set_sensor_topics(sensor_str):
+    sensor_topics = {
+        'DHT22': ['DHT22/Feuchtigkeit', 'DHT22/Temperatur']
+    }
+    return sensor_topics[sensor_str.upper()]
+
+
 
 def get_sensor_value():
     pass
@@ -79,6 +78,7 @@ def main():
         print (base_topic + '/' + topic)
     print ('###################\n')
     
+ 
     
     try:
         while True:

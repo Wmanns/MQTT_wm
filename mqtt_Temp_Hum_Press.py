@@ -113,18 +113,15 @@ def main():
                 # Publish
                 try:
                     # print ('Try: publish')
-                    ok = True
-                    # print (topics, sensor_values)
-                    # curr_time = time.localtime()
-                    # curr_clock = time.strftime("%H:%M:%S", curr_time)
                     print(time.strftime("%H:%M:%S", time.localtime()))
+                    ok = True
                     for val, topic in zip (sensor_values, topics):
                         val   = round(val, 1)
                         topic = base_topic + '/' + topic
                         # publish:
                         (result, mid) = mqttc.publish(topic, val)
                         print (val, '(' + topic + ')')
-                        ok = ok or (result != 0)
+                        ok = ok and (result != 0)
                     print()
                     
                     if not ok:

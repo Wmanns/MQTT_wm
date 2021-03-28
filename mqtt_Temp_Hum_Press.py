@@ -54,7 +54,17 @@ def get_sensor_topics(sensor_str):
     }
     return sensor_topics[sensor_str.upper()]
 
+def print_topics(base_topic, topics, poll_intervall):
+    lgth = 15
+    print ('\n' + '-' * lgth)
+    print ('Topics:')
+    for topic in topics:
+        print (base_topic + '/' + topic)
+    print ('Polling intervall: ', poll_intervall, 'sec')
+    print ('-' * lgth, '\n')
+
 def sensor_values_function(sensor_str):
+    print ('sensor_str =', sensor_str)
     if sensor_str   == 'DHT22':
         return Adafruit_DHT.read_retry
 
@@ -62,7 +72,6 @@ def sensor_values_function(sensor_str):
         i2c = busio.I2C(board.SCL, board.SDA)
         bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
         bme280.sea_level_pressure = 1013.25
-        
         def get_bme280_values():
             vals = (bme280.temperature,
                     bme280.relative_humidity,
@@ -70,9 +79,7 @@ def sensor_values_function(sensor_str):
                     bme280.altitude)
             # print (vals)
             return vals
-        
         return get_bme280_values   # KEINE KLAMMERN! => Funktion wird zurückgegeben !
-        # return adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
     else:
         raise  ValueError("\ndef get_sensor_values: Keine Sensorfunktion gefunden \n")
     return
@@ -87,34 +94,23 @@ def main():
     sensor_str = sys.argv[2]
     
     topics     = get_sensor_topics(sensor_str)
-    print (topics)
+    poll_intervall = int(sys.argv[4])
+    print_topics(base_topic, topics, poll_intervall)
     
     DHT_TYPE   = Adafruit_DHT.DHT22
     DHT_PIN    = sys.argv[3]
     
     
-    if (len(sys.argv) > 3):
-        poll_intervall = int(sys.argv[4])
-    else:
-        poll_intervall      = 60
-
+    # Connect to MQTT Broker
     mqttc = get_mqtt_connection(base_topic, wait_secs = 10)
-
-    lgth = 15
-    print ('\n' + '-' * lgth)
-    print ('Topics:')
-    for topic in topics:
-        print (base_topic + '/' + topic)
-    print ('Polling intervall: ', poll_intervall, 'sec')
-    print ('-' * lgth, '\n')
-
+    
+    # Get sensor function
     get_sensor_values = sensor_values_function(sensor_str)
     
     try:
         while True:
             try:
-                print ('Try: read_retry')
-                # sensor_values = Adafruit_DHT.read_retry(DHT_TYPE, DHT_PIN)
+                # print ('Try: read sensor values')
                 sensor_values = get_sensor_values()
                 # Publish
                 try:
@@ -122,7 +118,7 @@ def main():
                     ok = True
                     # print (topics, sensor_values)
                     for val, topic in zip (sensor_values, topics):
-                        val   = round(val, 3)
+                        val   = round(val, 1)
                         topic = base_topic + '/' + topic
                         # publish:
                         (result, mid) = mqttc.publish(topic, val)

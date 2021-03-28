@@ -44,6 +44,7 @@ def get_mqtt_connection(base_topic, wait_secs):
             MQTT_Port = 1883,
             MQTT_last_will = MQTT_last_will,
             wait_secs= wait_secs)
+    print('Connecting ok.\n')
     return mqttc
 
 
@@ -64,7 +65,7 @@ def print_topics(base_topic, topics, poll_intervall):
     print ('-' * lgth, '\n')
 
 def sensor_values_function(sensor_str):
-    print ('sensor_str =', sensor_str)
+    # print ('sensor_str =', sensor_str)
     if sensor_str   == 'DHT22':
         return Adafruit_DHT.read_retry
 
@@ -100,7 +101,6 @@ def main():
     DHT_TYPE   = Adafruit_DHT.DHT22
     DHT_PIN    = sys.argv[3]
     
-    
     # Connect to MQTT Broker
     mqttc = get_mqtt_connection(base_topic, wait_secs = 10)
     
@@ -124,9 +124,10 @@ def main():
                         (result, mid) = mqttc.publish(topic, val)
                         print (val, '(' + topic + ')')
                         ok = ok or (result != 0)
+                    print()
                     
                     if not ok:
-                        raise ValueError('Result for one MQTT-message was not 0')
+                        raise ValueError('Result for at least one of various MQTT-messages was not 0.')
                 
                 except Exception as e:
                     print('Error: during publishing to MQTT' + str(e))

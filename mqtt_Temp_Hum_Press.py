@@ -34,7 +34,6 @@ def print_usage_message():
     print (" python3 mqtt_wm.py  $(hostname)    'DHT11'         17                      60")
     print (" python3 mqtt_wm.py  $(hostname)    'bme280'        0x76                    10")
     
-
 def get_mqtt_connection(base_topic, wait_secs):
     MQTT_last_will    = base_topic + '/LWT: rh-rb-testsystem' #Create the last-will-and-testament topic
     print('MQTT LWT MSG {0}\n'.format(MQTT_last_will))
@@ -46,7 +45,6 @@ def get_mqtt_connection(base_topic, wait_secs):
             wait_secs= wait_secs)
     print('Connecting ok.\n')
     return mqttc
-
 
 def get_sensor_topics(sensor_str):
     sensor_topics = {
@@ -117,6 +115,9 @@ def main():
                     # print ('Try: publish')
                     ok = True
                     # print (topics, sensor_values)
+                    # curr_time = time.localtime()
+                    # curr_clock = time.strftime("%H:%M:%S", curr_time)
+                    print(time.strftime("%H:%M:%S", time.localtime()))
                     for val, topic in zip (sensor_values, topics):
                         val   = round(val, 1)
                         topic = base_topic + '/' + topic

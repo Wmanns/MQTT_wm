@@ -86,14 +86,16 @@ def sensor_values_function(sensor_str):
 
     elif sensor_str == 'bme680':
         i2c = busio.I2C(board.SCL, board.SDA)
-        bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c, address=0x76)
+        print ('i2c = ', i2c)
+        bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c, debug=False, address=0x76)
+        # bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c, debug=False)
         bme680.sea_level_pressure = 1013.25
         def get_bme680_values():
-            vals = (bme280.temperature,
-                    bme280.relative_humidity,
-                    bme280.pressure,
-                    bme280.altitude,
-                    bme280.gas)
+            vals = (bme680.temperature,
+                    bme680.relative_humidity,
+                    bme680.pressure,
+                    bme680.altitude,
+                    bme680.gas)
             # print (vals)
             return vals
         return get_bme680_values   # KEINE KLAMMERN! => Funktion wird zurückgegeben !
@@ -120,9 +122,10 @@ def main():
     
     # Connect to MQTT Broker
     mqttc = get_mqtt_connection(base_topic, wait_secs = 10)
-    
+
     # Get sensor function
     get_sensor_values = sensor_values_function(sensor_str)
+    
     
     try:
         while True:
@@ -132,22 +135,24 @@ def main():
                 # Publish
                 try:
                     # print ('Try: publish')
-                    print(time.strftime("%H:%M:%S", time.localtime()))
+                    # print(time.strftime("%H:%M:%S", time.localtime()))
                     ok = True
                     for val, topic in zip (sensor_values, topics):
                         val   = round(val, 1)
                         topic = base_topic + '/' + topic
-                        # publish:
+                        # publish -- nb: a result of 0 indicates success
                         (result, mid) = mqttc.publish(topic, val)
-                        print (val, '(' + topic + ')')
-                        ok = ok and (result != 0)
-                    print()
+                        # print (result, ok, val, '(' + topic + ')')
+                        ok = ok and (result == 0)
+                        if (result != 0):
+                            print ('Result for MQTT-message != 0: result, val, topic: ', result, ok, val, '(' + topic + ')')
+                    # print()
                     
                     if not ok:
                         raise ValueError('Result for at least one of various MQTT-messages was not 0.')
                 
                 except Exception as e:
-                    print('Error: during publishing to MQTT' + str(e))
+                    print('Error during publishing to MQTT: ' + str(e))
                     continue
             
             except Exception as e:

@@ -1,16 +1,25 @@
 #!/usr/bin/python3
-# DHT Sensor Data-logging to remote MQTT Broker
+# nota
+# Raspberry:
+# sudo i2cdetect -y 1 // show i2c devices
+# ls -l /dev/spidev*  // show SPI bus
+# pinout              // show pinout  // sudo apt install python3-gpiozero
+
 
 import sys
 import time
 import mqtt_connect
 
-# Adafruit BME280
-# pip3 install adafruit-circuitpython-bme280
+# Adafruit
 import board
 import digitalio
 import busio
+# Adafruit BME280
+# pip3 install adafruit-circuitpython-bme280
 import adafruit_bme280
+# Adafruit BME680
+# sudo pip3 install adafruit-circuitpython-bme680
+import adafruit_bme680
 
 # DHT11, DHT22
 # pip3 install Adafruit-DHT
@@ -19,12 +28,6 @@ import Adafruit_DHT
 # bme680
 # pip3 install bme680
 import bme680
-
-# nota
-# Raspberry:
-# sudo i2cdetect -y 1 // show i2c devices
-# ls -l /dev/spidev*  // show SPI bus
-# pinout              // show pinout  // sudo apt install python3-gpiozero
 
 
 def print_usage_message():
@@ -49,7 +52,8 @@ def get_mqtt_connection(base_topic, wait_secs):
 def get_sensor_topics(sensor_str):
     sensor_topics = {
         'DHT22':  ['DHT22/Feuchtigkeit', 'DHT22/Temperatur'],
-        'BME280': ['bme280/Feuchtigkeit', 'bme280/Temperatur', 'bme280/Luftdruck', 'bme280/Meereshöhe' ]
+        'BME280': ['bme280/Feuchtigkeit', 'bme280/Temperatur', 'bme280/Luftdruck', 'bme280/Meereshöhe' ],
+        'BME680': ['bme680/Feuchtigkeit', 'bme680/Temperatur', 'bme680/Luftdruck', 'bme680/Meereshöhe',  'bme680/Gas [Ohm]' ]
     }
     return sensor_topics[sensor_str.upper()]
 
@@ -79,6 +83,21 @@ def sensor_values_function(sensor_str):
             # print (vals)
             return vals
         return get_bme280_values   # KEINE KLAMMERN! => Funktion wird zurückgegeben !
+
+    elif sensor_str == 'bme680':
+        i2c = busio.I2C(board.SCL, board.SDA)
+        bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c, address=0x76)
+        bme680.sea_level_pressure = 1013.25
+        def get_bme680_values():
+            vals = (bme280.temperature,
+                    bme280.relative_humidity,
+                    bme280.pressure,
+                    bme280.altitude,
+                    bme280.gas)
+            # print (vals)
+            return vals
+        return get_bme680_values   # KEINE KLAMMERN! => Funktion wird zurückgegeben !
+
     else:
         raise  ValueError("\ndef get_sensor_values: Keine Sensorfunktion gefunden \n")
     return

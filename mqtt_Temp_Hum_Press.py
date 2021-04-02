@@ -5,7 +5,9 @@
 # sudo i2cdetect -y 1       // show i2c devices
 # ls -l /dev/spidev*        // show SPI bus
 # pinout                    // show pinout  // sudo apt install python3-gpiozero
-
+#
+# nohup python3 ./mqtt_Temp_Hum_Press.py 'system_name' 'bme680' 0x76 5 >/dev/null 2>&1 &
+# nohup python3 ./mqtt_Temp_Hum_Press.py 'moode-pcm5122' 'bme280' 0x76 5 >/dev/null 2>&1 &
 
 import sys
 import time
@@ -86,7 +88,7 @@ def sensor_values_function(sensor_str):
 	
 	elif sensor_str == 'bme680':
 		i2c = busio.I2C(board.SCL, board.SDA)
-		print ('i2c = ', i2c)
+		# print ('i2c = ', i2c)
 		bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c, debug=False, address=0x76)
 		# bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c, debug=False)
 		bme680.sea_level_pressure = 1013.25
@@ -132,6 +134,7 @@ def main():
 			try:
 				# print ('Try: read sensor values')
 				sensor_values = get_sensor_values()
+				# print ('Try: got  sensor values')
 				# Publish
 				try:
 					# print ('Try: publish')

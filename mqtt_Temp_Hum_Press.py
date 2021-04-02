@@ -26,10 +26,6 @@ import adafruit_bme680
 # pip3 install Adafruit-DHT
 import Adafruit_DHT
 
-# bme680
-# pip3 install bme680
-import bme680
-
 
 def print_usage_message():
 	print ("\n\n Usage: ")
@@ -69,7 +65,10 @@ def print_topics(base_topic, topics, poll_intervall):
 
 def sensor_values_function(sensor_str):
 	# print ('sensor_str =', sensor_str)
-	if sensor_str   == 'DHT22':
+	if False:
+		pass
+	
+	elif sensor_str == 'DHT22':
 		return Adafruit_DHT.read_retry
 	
 	elif sensor_str == 'bme280':

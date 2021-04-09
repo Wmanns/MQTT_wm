@@ -1,12 +1,29 @@
 #!/usr/bin/python3
-# nota
+# -*- coding: utf-8 -*-
+
 # Raspberry:
-# passwd -a {USERNAME} i2c  // add to group i2c
-# sudo i2cdetect -y 1       // show i2c devices
-# ls -l /dev/spidev*        // show SPI bus
-# pinout                    // show pinout  // sudo apt install python3-gpiozero
+# Pinout:
+# sudo apt install -y python3-gpiozero
+# pinout                         // show pinout
 #
-# nohup python3 ./mqtt_Temp_Hum_Press.py 'system_name' 'bme680' 0x76 5 >/dev/null 2>&1 &
+# i2c-tools:
+# sudo apt install -y i2c-tools  // install i2c-tools
+#
+# allow user to use i2c:
+# sudo gpasswd -a {USERNAME} i2c // add to group i2c
+#                                // {USERNAME} logout - login (to take effect !)
+#
+# sudo i2cdetect -y 1            // show i2c devices
+# ls -l /dev/spidev*             // show SPI bus
+#
+# MQTT:
+# pip3 install paho-mqtt         // install MQTT client
+#
+# Adafruit:
+# pip3 install adafruit-circuitpython-bme280
+# pip3 install adafruit-circuitpython-bme680
+
+# nohup python3 ./mqtt_Temp_Hum_Press.py 'system_name'   'bme680' 0x76 5 >/dev/null 2>&1 &
 # nohup python3 ./mqtt_Temp_Hum_Press.py 'moode-pcm5122' 'bme280' 0x76 5 >/dev/null 2>&1 &
 
 import sys
@@ -26,22 +43,22 @@ import adafruit_bme680
 
 # DHT11, DHT22
 # pip3 install Adafruit-DHT
-import Adafruit_DHT
+# import Adafruit_DHT
 
 
 def print_usage_message():
 	print ("\n\n Usage: ")
-	print (" python3 mqtt_wm.py  'Topic'        'Sensor_Type'   GPIO-PIN / address      WAIT_SECONDS")
-	print (" python3 mqtt_wm.py  'base_topic'   'DHT22'         4                       30")
-	print (" python3 mqtt_wm.py  $(hostname)    'DHT11'         17                      60")
-	print (" python3 mqtt_wm.py  $(hostname)    'bme280'        0x76                    10")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  'Topic'        'Sensor_Type'   GPIO-PIN / address      WAIT_SECONDS")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  $(hostname)    'bme680'        0x76                    60")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  $(hostname)    'bme280'        0x76                    10")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  test-host 'bme280' 0x76 5" )
 
 def get_mqtt_connection(base_topic, wait_secs):
 	MQTT_last_will    = base_topic + '/LWT: rh-rb-testsystem' #Create the last-will-and-testament topic
 	print('MQTT LWT MSG {0}\n'.format(MQTT_last_will))
 	
 	mqttc = mqtt_connect.set_MQTT_broker(
-			MQTT_broker_name = 'rh-rb-openhab',
+			MQTT_broker_name = 'rh-rb4-redcase',
 			MQTT_Port = 1883,
 			MQTT_last_will = MQTT_last_will,
 			wait_secs= wait_secs)

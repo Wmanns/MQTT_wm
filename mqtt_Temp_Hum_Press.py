@@ -46,11 +46,10 @@ def print_usage_message():
 
 
 def get_mqtt_connection(mqtt_URL, base_topic, wait_secs):
-	MQTT_last_will = base_topic + '/LWT: ' +  mqtt_URL # Create the last-will-and-testament topic
+	MQTT_last_will = base_topic + '/LWT: ' +  base_topic # Create the last-will-and-testament topic
 	print('MQTT LWT MSG: > {0} <\n'.format(MQTT_last_will))
 	print('mqtt_URL:     > {0} <\n'.format(mqtt_URL))
 	
-	# mqtt_URL = 'rh-rb-testsystem'
 	mqttc = mqtt_connect.set_MQTT_broker(
 			MQTT_broker_name = mqtt_URL,
 			MQTT_Port = 1883,
@@ -160,7 +159,7 @@ def main():
 	print_topics(mqtt_base_topic, topics, delay)
 	
 	# Connect to MQTT Broker
-	mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 10)
+	mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
 	
 	# Get sensor function
 	get_sensor_values = sensor_values_function(sensor_str)
@@ -170,11 +169,14 @@ def main():
 	
 	
 	try:
-		cnt_ok = 1
+		cnt_total = 1
+		cnt_ok    = 1
 		while True:
 			try:
 				# print ('Try: read sensor values')
 				sensor_values = get_sensor_values()
+				cnt_total += 1
+				
 				# print ('Try: got  sensor values')
 				# Publish
 				try:
@@ -189,7 +191,7 @@ def main():
 						# print (result, ok, val, '(' + topic + ')')
 						ok = ok and (result == 0)
 						if (result != 0):
-							print ('Result for MQTT-message != 0: result, val, topic: ', result, ok, val, '(' + topic + ')')
+							print ('Result for MQTT-message != 0: result, val, topic: ', result, ok, val, '>' + topic + '<')
 					# print()
 					
 					if not ok:
@@ -200,12 +202,12 @@ def main():
 				
 				except Exception as e:
 					print('Error during publishing to MQTT: ' + str(e))
-					mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 10)
+					mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
 					continue
 			
 				cnt_ok += 1
 			except Exception as e:
-				print('\n Error reading sensor data after {:d} measurements.'.format(cnt_ok - 1))
+				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} total measurements'.format(cnt_ok - 1, cnt_total))
 				cnt_ok = 1
 				
 			

@@ -42,7 +42,7 @@ def print_usage_message():
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL Topic         Sensor_Type   log_target   Delay")
 	print (" ------- ------------------------  --------------         -----------   -------      -----")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL $(hostname)   bme680        stdout         60")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL test-host     bme280        nul             5" )
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL test-host     bme280        null            5" )
 
 
 def get_mqtt_connection(mqtt_URL, base_topic, wait_secs):
@@ -120,17 +120,20 @@ def sensor_values_function(sensor_str):
 			# print (vals)
 			return vals
 		return get_bme680_values   # KEINE KLAMMERN! => Funktion wird zurückgegeben !
-	
 	else:
 		raise  ValueError("\ndef get_sensor_values: Keine Sensorfunktion gefunden \n")
 	return
 
-def redirect_stdout_to_dev_null(log_target, log_target_par ):
+def redirect_stdout_to_dev_null(log_target, log_target_par):
+	print ('log_target = ', log_target)
 	if log_target not in ['stdout', 'null']:
 		print_usage_message()
-		print ('Parameter # {:d} should be "stdout" or "null". '.format(log_target_par))
-	
-	pass
+		print ('\n Parameter #{:d} should be "stdout" or "null"! -> exit\n'.format(log_target_par) )
+		exit()
+	elif (log_target == 'null'):
+		f = open(os.devnull, 'w')
+		sys.stdout = f
+	return
 
 def main():
 	# print (" python3 ./mqtt_Temp_Hum_Press.py  'Topic'        'Sensor_Type'   GPIO-PIN / address      WAIT_SECONDS")
@@ -161,6 +164,9 @@ def main():
 	
 	# Get sensor function
 	get_sensor_values = sensor_values_function(sensor_str)
+	
+	# Redirect output according to parameter
+	redirect_stdout_to_dev_null(log_target, log_target_par)
 	
 	
 	try:

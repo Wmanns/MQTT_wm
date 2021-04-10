@@ -38,8 +38,8 @@ import busio
 def print_usage_message():
 	print ("\n\n Usage: ")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL Topic         Sensor_Type   address   Delay")
+	print (" ------- ------------------------  --------------         -----------   -------   -----")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL $(hostname)   bme680        0x76      60")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL $(hostname)   bme280        0x76      10")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL test-host     bme280        0x76      5" )
 
 

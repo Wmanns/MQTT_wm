@@ -34,31 +34,23 @@ import mqtt_connect
 import board
 import digitalio
 import busio
-# Adafruit BME280
-# pip3 install adafruit-circuitpython-bme280
-import adafruit_bme280
-# Adafruit BME680
-# pip3 install adafruit-circuitpython-bme680
-import adafruit_bme680
-
-# DHT11, DHT22
-# pip3 install Adafruit-DHT
-# import Adafruit_DHT
-
 
 def print_usage_message():
 	print ("\n\n Usage: ")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  'Topic'        'Sensor_Type'   GPIO-PIN / address      WAIT_SECONDS")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  $(hostname)    'bme680'        0x76                    60")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  $(hostname)    'bme280'        0x76                    10")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  test-host 'bme280' 0x76 5" )
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL Topic         Sensor_Type   address   Delay")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL $(hostname)   bme680        0x76      60")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL $(hostname)   bme280        0x76      10")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL test-host     bme280        0x76      5" )
 
-def get_mqtt_connection(base_topic, wait_secs):
-	MQTT_last_will    = base_topic + '/LWT: rh-rb-testsystem' #Create the last-will-and-testament topic
-	print('MQTT LWT MSG {0}\n'.format(MQTT_last_will))
+
+def get_mqtt_connection(mqtt_URL, base_topic, wait_secs):
+	MQTT_last_will = base_topic + '/LWT: ' +  mqtt_URL # Create the last-will-and-testament topic
+	print('MQTT LWT MSG: > {0} <\n'.format(MQTT_last_will))
+	print('mqtt_URL:     > {0} <\n'.format(mqtt_URL))
 	
+	# mqtt_URL = 'rh-rb-testsystem'
 	mqttc = mqtt_connect.set_MQTT_broker(
-			MQTT_broker_name = 'rh-rb4-redcase',
+			MQTT_broker_name = mqtt_URL,
 			MQTT_Port = 1883,
 			MQTT_last_will = MQTT_last_will,
 			wait_secs= wait_secs)
@@ -67,6 +59,7 @@ def get_mqtt_connection(base_topic, wait_secs):
 
 def get_sensor_topics(sensor_str):
 	sensor_topics = {
+		'DHT11':  ['DHT11/Feuchtigkeit', 'DHT11/Temperatur'],
 		'DHT22':  ['DHT22/Feuchtigkeit', 'DHT22/Temperatur'],
 		'BME280': ['bme280/Feuchtigkeit', 'bme280/Temperatur', 'bme280/Luftdruck', 'bme280/Meereshöhe' ],
 		'BME680': ['bme680/Feuchtigkeit', 'bme680/Temperatur', 'bme680/Luftdruck', 'bme680/Meereshöhe',  'bme680/Gas [Ohm]' ]
@@ -88,9 +81,15 @@ def sensor_values_function(sensor_str):
 		pass
 	
 	# elif sensor_str == 'DHT22':
+	# import Adafruit_DHT
+	# DHT_TYPE   = Adafruit_DHT.DHT22
+	# DHT_PIN    = sys.argv[3]
 	# 	return Adafruit_DHT.read_retry
+	# DHT11, DHT22
+	# pip3 install Adafruit-DHT
 	
-	elif sensor_str == 'bme280':
+	elif sensor_str == 'BME280':
+		import adafruit_bme280
 		i2c = busio.I2C(board.SCL, board.SDA)
 		bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
 		bme280.sea_level_pressure = 1013.25
@@ -103,7 +102,8 @@ def sensor_values_function(sensor_str):
 			return vals
 		return get_bme280_values   # KEINE KLAMMERN! => Funktion wird zurückgegeben !
 	
-	elif sensor_str == 'bme680':
+	elif sensor_str == 'BME680':
+		import adafruit_bme680
 		i2c = busio.I2C(board.SCL, board.SDA)
 		# print ('i2c = ', i2c)
 		bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c, debug=False, address=0x76)
@@ -125,28 +125,38 @@ def sensor_values_function(sensor_str):
 
 
 def main():
-	if (len(sys.argv) < 2):
+	# print (" python3 ./mqtt_Temp_Hum_Press.py  'Topic'        'Sensor_Type'   GPIO-PIN / address      WAIT_SECONDS")
+	par_cnt = 1
+	mqtt_URL_par        = par_cnt; par_cnt += 1
+	mqtt_base_topic_par = par_cnt; par_cnt += 1
+	sensor_str_par      = par_cnt; par_cnt += 1
+	address_str_par     = par_cnt; par_cnt += 1
+	delay_str_par       = par_cnt;
+
+	if (len(sys.argv) < par_cnt):
 		print_usage_message()
 		raise  ValueError("\nMissing parameters?\n")
 	
-	base_topic = sys.argv[1]
-	sensor_str = sys.argv[2]
+	mqtt_URL        = sys.argv[mqtt_URL_par]
+	mqtt_base_topic = sys.argv[mqtt_base_topic_par]
+	sensor_str      = sys.argv[sensor_str_par].upper()
+	address_str     = sys.argv[address_str_par]
+	delay_str       = sys.argv[delay_str_par]
+
+	topics          = get_sensor_topics(sensor_str)
+	delay           = int(delay_str)
 	
-	topics     = get_sensor_topics(sensor_str)
-	poll_intervall = int(sys.argv[4])
-	print_topics(base_topic, topics, poll_intervall)
-	
-	# DHT_TYPE   = Adafruit_DHT.DHT22
-	# DHT_PIN    = sys.argv[3]
+	print_topics(mqtt_base_topic, topics, delay)
 	
 	# Connect to MQTT Broker
-	mqttc = get_mqtt_connection(base_topic, wait_secs = 10)
+	mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 10)
 	
 	# Get sensor function
 	get_sensor_values = sensor_values_function(sensor_str)
 	
 	
 	try:
+		cnt_ok = 1
 		while True:
 			try:
 				# print ('Try: read sensor values')
@@ -159,7 +169,7 @@ def main():
 					ok = True
 					for val, topic in zip (sensor_values, topics):
 						val   = round(val, 1)
-						topic = base_topic + '/' + topic
+						topic = mqtt_base_topic + '/' + topic
 						# publish -- nb: a result of 0 indicates success
 						(result, mid) = mqttc.publish(topic, val)
 						# print (result, ok, val, '(' + topic + ')')
@@ -178,11 +188,14 @@ def main():
 					print('Error during publishing to MQTT: ' + str(e))
 					continue
 			
+				cnt_ok += 1
 			except Exception as e:
-				print('\nError: reading sensor data.')
+				print('\n Error reading sensor data after {:d} measurements.'.format(cnt_ok - 1))
+				cnt_ok = 1
+				
 			
 			# print ('Sleep: ', poll_intervall, 'sec')
-			time.sleep(poll_intervall)
+			time.sleep(delay)
 	
 	except Exception as e:
 		print('Error connecting to the MQTT server: {0}'.format(e))

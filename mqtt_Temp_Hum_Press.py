@@ -38,7 +38,7 @@ import busio
 # pip3 install adafruit-circuitpython-bme280
 import adafruit_bme280
 # Adafruit BME680
-# sudo pip3 install adafruit-circuitpython-bme680
+# pip3 install adafruit-circuitpython-bme680
 import adafruit_bme680
 
 # DHT11, DHT22
@@ -87,8 +87,8 @@ def sensor_values_function(sensor_str):
 	if False:
 		pass
 	
-	elif sensor_str == 'DHT22':
-		return Adafruit_DHT.read_retry
+	# elif sensor_str == 'DHT22':
+	# 	return Adafruit_DHT.read_retry
 	
 	elif sensor_str == 'bme280':
 		i2c = busio.I2C(board.SCL, board.SDA)
@@ -136,8 +136,8 @@ def main():
 	poll_intervall = int(sys.argv[4])
 	print_topics(base_topic, topics, poll_intervall)
 	
-	DHT_TYPE   = Adafruit_DHT.DHT22
-	DHT_PIN    = sys.argv[3]
+	# DHT_TYPE   = Adafruit_DHT.DHT22
+	# DHT_PIN    = sys.argv[3]
 	
 	# Connect to MQTT Broker
 	mqttc = get_mqtt_connection(base_topic, wait_secs = 10)
@@ -170,6 +170,9 @@ def main():
 					
 					if not ok:
 						raise ValueError('Result for at least one of various MQTT-messages was not 0.')
+					else:
+						print ('.', end='')
+						sys.stdout.flush()
 				
 				except Exception as e:
 					print('Error during publishing to MQTT: ' + str(e))

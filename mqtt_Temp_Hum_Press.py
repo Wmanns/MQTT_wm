@@ -200,6 +200,7 @@ def main():
 				
 				except Exception as e:
 					print('Error during publishing to MQTT: ' + str(e))
+					mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 10)
 					continue
 			
 				cnt_ok += 1

@@ -47,15 +47,15 @@ def print_usage_message():
 
 def get_mqtt_connection(mqtt_URL, base_topic, wait_secs):
 	MQTT_last_will = base_topic + '/LWT: ' +  base_topic # Create the last-will-and-testament topic
-	print('MQTT LWT MSG: > {0} <\n'.format(MQTT_last_will))
-	print('mqtt_URL:     > {0} <\n'.format(mqtt_URL))
+	print('mqtt_URL:           > {0} <'.format(mqtt_URL))
+	print('mqtt LWT_MSG:       > {0} <'.format(MQTT_last_will))
 	
 	mqttc = mqtt_connect.set_MQTT_broker(
 			MQTT_broker_name = mqtt_URL,
 			MQTT_Port = 1883,
 			MQTT_last_will = MQTT_last_will,
 			wait_secs= wait_secs)
-	print('Connecting ok.\n')
+	print('Connecting ok.')
 	return mqttc
 
 def get_sensor_topics(sensor_str):
@@ -134,6 +134,19 @@ def redirect_stdout_to_dev_null(log_target, log_target_par):
 		sys.stdout = f
 	return
 
+def get_mqtt_error_message(idx):
+	errors = {
+		'0': 'Connection successful',
+		'1': 'Connection refused – incorrect protocol version',
+		'2': 'Connection refused – invalid client identifier',
+		'3': 'Connection refused – server unavailable',
+		'4': 'Connection refused – bad username or password',
+		'5': 'Connection refused – not authorised'
+		}
+	error = errors[idx]
+	return error
+
+
 def main():
 	# print (" python3 ./mqtt_Temp_Hum_Press.py  'Topic'        'Sensor_Type'   GPIO-PIN / address      WAIT_SECONDS")
 	par_cnt = 1
@@ -191,7 +204,8 @@ def main():
 						# print (result, ok, val, '(' + topic + ')')
 						ok = ok and (result == 0)
 						if (result != 0):
-							print ('Result for MQTT-message != 0: result, val, topic: ', result, ok, val, '>' + topic + '<')
+							print ('\n Result for MQTT-message != 0: result, val, topic: ', result, ok, val, '>' + topic + '<')
+							print ('>>>> ', result, '==', get_mqtt_error_message(result))
 					# print()
 					
 					if not ok:
@@ -202,12 +216,13 @@ def main():
 				
 				except Exception as e:
 					print('Error during publishing to MQTT: ' + str(e))
+					print ('>                               ', result, '==', get_mqtt_error_message(result))
 					mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
 					continue
 			
 				cnt_ok += 1
 			except Exception as e:
-				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} total measurements'.format(cnt_ok - 1, cnt_total))
+				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} measurements in total'.format(cnt_ok - 1, cnt_total))
 				cnt_ok = 1
 				
 			

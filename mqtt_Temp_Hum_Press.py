@@ -179,7 +179,7 @@ def main():
 					continue
 			
 			except Exception as e:
-				print('Error: reading sensor data.')
+				print('\nError: reading sensor data.')
 			
 			# print ('Sleep: ', poll_intervall, 'sec')
 			time.sleep(poll_intervall)

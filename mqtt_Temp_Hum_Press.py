@@ -53,6 +53,7 @@ def get_mqtt_connection(mqtt_URL, base_topic, wait_secs):
 	mqttc = mqtt_connect.set_MQTT_broker(
 			MQTT_broker_name = mqtt_URL,
 			MQTT_Port = 1883,
+			MQTT_qos  = 1,
 			MQTT_last_will = MQTT_last_will,
 			wait_secs= wait_secs)
 	print('Connecting ok.')
@@ -143,8 +144,7 @@ def get_mqtt_error_message(idx):
 		'4': 'Connection refused – bad username or password',
 		'5': 'Connection refused – not authorised'
 		}
-	error = errors[idx]
-	return error
+	return ('"' + errors[idx] + '"')
 
 
 def main():
@@ -165,21 +165,18 @@ def main():
 	sensor_str      = sys.argv[sensor_str_par].upper()
 	log_target      = sys.argv[log_target_par]
 	delay_str       = sys.argv[delay_str_par]
-
-	topics          = get_sensor_topics(sensor_str)
+	
 	delay           = int(delay_str)
 	
+	# Get sensor topics
+	topics          = get_sensor_topics(sensor_str)
 	print_topics(mqtt_base_topic, topics, delay)
-	
 	# Connect to MQTT Broker
 	mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
-	
 	# Get sensor function
 	get_sensor_values = sensor_values_function(sensor_str)
-	
 	# Redirect output according to parameter
 	redirect_stdout_to_dev_null(log_target, log_target_par)
-	
 	
 	try:
 		cnt_total = 1
@@ -204,8 +201,13 @@ def main():
 						# print (result, ok, val, '(' + topic + ')')
 						ok = ok and (result == 0)
 						if (result != 0):
-							print ('\n Result for MQTT-message != 0: result, val, topic: ', result, ok, val, '>' + topic + '<')
-							print ('>>>> ', result, '==', get_mqtt_error_message(result))
+							# print ('\n Result for MQTT-message != 0: result, val, topic: ', result, ok, val, ' >' + topic + '<')
+							print(' Error during publishing to MQTT: ' + str(result) + ' == ' \
+							      + get_mqtt_error_message(str(result)) \
+							      + '; >' + topic + '<'
+							      )
+							sys.stdout.flush()
+							mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
 					# print()
 					
 					if not ok:
@@ -215,17 +217,20 @@ def main():
 						sys.stdout.flush()
 				
 				except Exception as e:
-					print('Error during publishing to MQTT: ' + str(e))
-					print ('>                               ', result, '==', get_mqtt_error_message(result))
+					print('Error during publishing to MQTT: ' + str(e) + ' == ' + get_mqtt_error_message(str(e)))
 					mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
-					continue
+					# continue
 			
 				cnt_ok += 1
 			except Exception as e:
-				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} measurements in total'.format(cnt_ok - 1, cnt_total))
+				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} measurements in total.'.format(cnt_ok - 1, cnt_total), end='')
+				if (cnt_ok - 1 == 0):
+					print(' Waiting {:d} seconds.'.format(delay * 2))
+					time.sleep(delay * 2)
+				else:
+					print()
 				cnt_ok = 1
 				
-			
 			# print ('Sleep: ', poll_intervall, 'sec')
 			time.sleep(delay)
 	

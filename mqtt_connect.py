@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 import paho.mqtt.client as mqtt
 
-def set_MQTT_broker(MQTT_broker_name, MQTT_Port, MQTT_last_will, wait_secs):
+def set_MQTT_broker(MQTT_broker_name, MQTT_Port, MQTT_qos, MQTT_last_will, wait_secs):
     print('Connecting with MQTT: {0}'.format(MQTT_broker_name))
     mqttc = mqtt.Client(MQTT_broker_name)
-    mqttc.will_set(MQTT_last_will, payload = 'offline', qos = 0, retain = True)
+    mqttc.will_set(MQTT_last_will, payload = 'offline', qos = MQTT_qos, retain = True)
     mqttc.connect (MQTT_broker_name, MQTT_Port, keepalive = wait_secs + 10)
-    mqttc.publish (MQTT_last_will, payload = 'online',  qos = 0, retain = True)
+    mqttc.publish (MQTT_last_will, payload = 'online',  qos = MQTT_qos, retain = True)
     return mqttc
 
 def main():

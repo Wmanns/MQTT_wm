@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# git clone https://github.com/Wmanns/MQTT_wm.git
 # Raspberry:
 # Pinout:
 # sudo apt install -y python3-gpiozero
@@ -27,6 +28,7 @@
 # nohup python3 ./mqtt_Temp_Hum_Press.py 'moode-pcm5122' 'bme280' 0x76 5 >/dev/null 2>&1 &
 
 import sys
+import os
 import time
 import mqtt_connect
 
@@ -37,10 +39,10 @@ import busio
 
 def print_usage_message():
 	print ("\n\n Usage: ")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL Topic         Sensor_Type   address   Delay")
-	print (" ------- ------------------------  --------------         -----------   -------   -----")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL $(hostname)   bme680        0x76      60")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL test-host     bme280        0x76      5" )
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL Topic         Sensor_Type   log_target   Delay")
+	print (" ------- ------------------------  --------------         -----------   -------      -----")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL $(hostname)   bme680        stdout         60")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL test-host     bme280        nul             5" )
 
 
 def get_mqtt_connection(mqtt_URL, base_topic, wait_secs):
@@ -123,6 +125,12 @@ def sensor_values_function(sensor_str):
 		raise  ValueError("\ndef get_sensor_values: Keine Sensorfunktion gefunden \n")
 	return
 
+def redirect_stdout_to_dev_null(log_target, log_target_par ):
+	if log_target not in ['stdout', 'null']:
+		print_usage_message()
+		print ('Parameter # {:d} should be "stdout" or "null". '.format(log_target_par))
+	
+	pass
 
 def main():
 	# print (" python3 ./mqtt_Temp_Hum_Press.py  'Topic'        'Sensor_Type'   GPIO-PIN / address      WAIT_SECONDS")
@@ -130,7 +138,7 @@ def main():
 	mqtt_URL_par        = par_cnt; par_cnt += 1
 	mqtt_base_topic_par = par_cnt; par_cnt += 1
 	sensor_str_par      = par_cnt; par_cnt += 1
-	address_str_par     = par_cnt; par_cnt += 1
+	log_target_par      = par_cnt; par_cnt += 1
 	delay_str_par       = par_cnt;
 
 	if (len(sys.argv) < par_cnt):
@@ -140,7 +148,7 @@ def main():
 	mqtt_URL        = sys.argv[mqtt_URL_par]
 	mqtt_base_topic = sys.argv[mqtt_base_topic_par]
 	sensor_str      = sys.argv[sensor_str_par].upper()
-	address_str     = sys.argv[address_str_par]
+	log_target      = sys.argv[log_target_par]
 	delay_str       = sys.argv[delay_str_par]
 
 	topics          = get_sensor_topics(sensor_str)

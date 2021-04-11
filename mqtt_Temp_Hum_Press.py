@@ -24,6 +24,7 @@
 # pip3 install adafruit-circuitpython-bme280
 # pip3 install adafruit-circuitpython-bme680
 
+
 # nohup python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  topic  bme280 stdout 5 >/dev/null 2>&1 &
 
 import sys
@@ -82,7 +83,7 @@ def print_topics(base_topic, topics, poll_intervall):
 	print ('Polling intervall: ', poll_intervall, 'sec')
 	print ('-' * lgth, '\n')
 
-def sensor_values_function(sensor_str):
+def get_sensor_values_function(sensor_str):
 	# print ('sensor_str =', sensor_str)
 	if False:
 		pass
@@ -179,7 +180,7 @@ def main():
 	# Connect to MQTT Broker
 	mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
 	# Get sensor function
-	get_sensor_values = sensor_values_function(sensor_str)
+	get_sensor_values = get_sensor_values_function(sensor_str)
 	# Redirect output according to parameter
 	redirect_stdout_to_dev_null(log_target, log_target_par)
 	
@@ -188,11 +189,11 @@ def main():
 		cnt_ok    = 1
 		while True:
 			try:
-				# print ('Try: read sensor values')
+				# print ('Try: read sensor values', end = '')
 				sensor_values = get_sensor_values()
 				cnt_total += 1
+				# print ('ok.')
 				
-				# print ('Try: got  sensor values')
 				# Publish
 				try:
 					# print ('Try: publish')
@@ -230,7 +231,10 @@ def main():
 				cnt_ok += 1
 			except Exception as e:
 				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} measurements in total.'.format(cnt_ok - 1, cnt_total), end='')
+				# BME280 : soft reset via: Adafruit_BME280._reset()
 				if (cnt_ok - 1 == 0):
+					# Hopefully by reinitializing the >get_sensor_values()< function the device itself is reset.
+					get_sensor_values = get_sensor_values_function(sensor_str)
 					print(' Waiting {:d} seconds.'.format(delay * 2))
 					time.sleep(delay * 2)
 				else:

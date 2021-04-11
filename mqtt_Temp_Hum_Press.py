@@ -24,8 +24,7 @@
 # pip3 install adafruit-circuitpython-bme280
 # pip3 install adafruit-circuitpython-bme680
 
-# nohup python3 ./mqtt_Temp_Hum_Press.py 'system_name'   'bme680' 0x76 5 >/dev/null 2>&1 &
-# nohup python3 ./mqtt_Temp_Hum_Press.py 'moode-pcm5122' 'bme280' 0x76 5 >/dev/null 2>&1 &
+# nohup python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  topic  bme280 stdout 5 >/dev/null 2>&1 &
 
 import sys
 import os
@@ -39,10 +38,10 @@ import busio
 
 def print_usage_message():
 	print ("\n\n Usage: ")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL Topic         Sensor_Type   log_target   Delay")
-	print (" ------- ------------------------  --------------         -----------   -------      -----")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL $(hostname)   bme680        stdout         60")
-	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL test-host     bme280        null            5" )
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  Topic        Sensor_Type   log_target   Delay")
+	print (" ------- ------------------------  --------  -----        -----------   -------      -----")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  topic        bme280        stdout       60")
+	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  $(hostname)  bme680        null          5")
 
 
 def get_mqtt_connection(mqtt_URL, mqtt_qos, base_topic, wait_secs):

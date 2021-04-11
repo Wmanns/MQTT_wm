@@ -179,10 +179,14 @@ def get_dew_point_c(t_air_c, rel_humidity):
 def publish_dew_point(sensor_values, mqtt_base_topic, sensor_str, mqttc):
 	temperature_air_c = sensor_values[0]
 	rel_humidity      = sensor_values[1]
-	topic = mqtt_base_topic + '/' + sensor_str + '/Taupunkt'
-	dew_point = get_dew_point_c(temperature_air_c, rel_humidity)
-	(result, mid) = mqttc.publish(topic, dew_point)
-	ok = (result == 0)
+	if  (temperature_air_c > -30.0) and (temperature_air_c < 70.0) and \
+		(rel_humidity > 0.0) and (rel_humidity < 100.1):
+		topic = mqtt_base_topic + '/' + sensor_str + '/Taupunkt'
+		dew_point = get_dew_point_c(temperature_air_c, rel_humidity)
+		(result, mid) = mqttc.publish(topic, dew_point)
+		ok = (result == 0)
+	else:
+		ok = True
 	return ok
 
 

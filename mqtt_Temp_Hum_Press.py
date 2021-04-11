@@ -45,17 +45,17 @@ def print_usage_message():
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL test-host     bme280        null            5" )
 
 
-def get_mqtt_connection(mqtt_URL, base_topic, wait_secs):
+def get_mqtt_connection(mqtt_URL, mqtt_qos, base_topic, wait_secs):
 	MQTT_last_will = base_topic + '/LWT: ' +  base_topic # Create the last-will-and-testament topic
 	print('mqtt_URL:           > {0} <'.format(mqtt_URL))
 	print('mqtt LWT_MSG:       > {0} <'.format(MQTT_last_will))
 	
 	mqttc = mqtt_connect.set_MQTT_broker(
 			MQTT_broker_name = mqtt_URL,
-			MQTT_Port = 1883,
-			MQTT_qos  = 1,
-			MQTT_last_will = MQTT_last_will,
-			wait_secs= wait_secs)
+			MQTT_Port        = 1883,
+			MQTT_qos         = mqtt_qos,
+			MQTT_last_will   = MQTT_last_will,
+			wait_secs        = wait_secs)
 	print('Connecting ok.')
 	return mqttc
 
@@ -172,7 +172,7 @@ def main():
 	topics          = get_sensor_topics(sensor_str)
 	print_topics(mqtt_base_topic, topics, delay)
 	# Connect to MQTT Broker
-	mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
+	mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
 	# Get sensor function
 	get_sensor_values = sensor_values_function(sensor_str)
 	# Redirect output according to parameter
@@ -207,7 +207,7 @@ def main():
 							      + '; >' + topic + '<'
 							      )
 							sys.stdout.flush()
-							mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
+							mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
 					# print()
 					
 					if not ok:
@@ -218,7 +218,7 @@ def main():
 				
 				except Exception as e:
 					print('Error during publishing to MQTT: ' + str(e) + ' == ' + get_mqtt_error_message(str(e)))
-					mqttc = get_mqtt_connection(mqtt_URL, mqtt_base_topic, wait_secs = 5)
+					mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
 					# continue
 			
 				cnt_ok += 1

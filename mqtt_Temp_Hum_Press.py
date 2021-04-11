@@ -186,6 +186,7 @@ def main():
 	
 	try:
 		cnt_total = 1
+		cnt_fail  = 0
 		cnt_ok    = 1
 		while True:
 			try:
@@ -230,7 +231,8 @@ def main():
 			
 				cnt_ok += 1
 			except Exception as e:
-				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} measurements in total.'.format(cnt_ok - 1, cnt_total), end='')
+				cnt_fail  += 1
+				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} measurements in total, {:d} failed. '.format(cnt_ok - 1, cnt_total, cnt_fail), end='')
 				# BME280 : soft reset via: Adafruit_BME280._reset()
 				if (cnt_ok - 1 == 0):
 					# Hopefully by reinitializing the >get_sensor_values()< function the device itself is reset.

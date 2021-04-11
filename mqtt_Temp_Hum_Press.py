@@ -204,6 +204,7 @@ def main():
 						# publish -- nb: a result of 0 indicates success
 						(result, mid) = mqttc.publish(topic, val)
 						# print (result, ok, val, '(' + topic + ')')
+						# print (val, ': ' + topic )
 						ok = ok and (result == 0)
 						if (result != 0):
 							# print ('\n Result for MQTT-message != 0: result, val, topic: ', result, ok, val, ' >' + topic + '<')
@@ -213,13 +214,13 @@ def main():
 							      )
 							sys.stdout.flush()
 							mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
-					# print()
 					
 					if not ok:
 						raise ValueError('Result for at least one of various MQTT-messages was not 0.')
 					else:
 						print ('.', end='')
 						sys.stdout.flush()
+				# print()
 				
 				except Exception as e:
 					print('Error during publishing to MQTT: ' + str(e) + ' == ' + get_mqtt_error_message(str(e)))

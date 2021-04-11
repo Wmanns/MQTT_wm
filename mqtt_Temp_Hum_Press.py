@@ -61,12 +61,17 @@ def get_mqtt_connection(mqtt_URL, mqtt_qos, base_topic, wait_secs):
 
 def get_sensor_topics(sensor_str):
 	sensor_topics = {
-		'DHT11':  ['DHT11/Feuchtigkeit', 'DHT11/Temperatur'],
-		'DHT22':  ['DHT22/Feuchtigkeit', 'DHT22/Temperatur'],
-		'BME280': ['BME280/Feuchtigkeit', 'BME280/Temperatur', 'BME280/Luftdruck', 'BME280/Meereshöhe' ],
-		'BME680': ['BME680/Feuchtigkeit', 'BME680/Temperatur', 'BME680/Luftdruck', 'BME680/Meereshöhe',  'BME680/Gas [Ohm]' ]
-	}
-	return sensor_topics[sensor_str.upper()]
+		'DHT11' : ['Feuchtigkeit', 'Temperatur'],
+		'DHT22' : ['Feuchtigkeit', 'Temperatur'],
+		'BME280': ['Feuchtigkeit', 'Temperatur', 'Luftdruck', 'Meereshöhe' ],
+		'BME680': ['Feuchtigkeit', 'Temperatur', 'Luftdruck', 'Meereshöhe',  'Gas [Ohm]' ]
+		}
+	
+	sensor_str = sensor_str.upper()
+	for cnt, item in enumerate (sensor_topics[sensor_str]):
+		sensor_topics[sensor_str][cnt] = sensor_str + '/' + item
+	
+	return sensor_topics[sensor_str]
 
 def print_topics(base_topic, topics, poll_intervall):
 	lgth = 15

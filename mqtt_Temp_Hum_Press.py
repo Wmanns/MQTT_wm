@@ -63,8 +63,8 @@ def get_sensor_topics(sensor_str):
 	sensor_topics = {
 		'DHT11':  ['DHT11/Feuchtigkeit', 'DHT11/Temperatur'],
 		'DHT22':  ['DHT22/Feuchtigkeit', 'DHT22/Temperatur'],
-		'BME280': ['bme280/Feuchtigkeit', 'bme280/Temperatur', 'bme280/Luftdruck', 'bme280/Meereshöhe' ],
-		'BME680': ['bme680/Feuchtigkeit', 'bme680/Temperatur', 'bme680/Luftdruck', 'bme680/Meereshöhe',  'bme680/Gas [Ohm]' ]
+		'BME280': ['BME280/Feuchtigkeit', 'BME280/Temperatur', 'BME280/Luftdruck', 'BME280/Meereshöhe' ],
+		'BME680': ['BME680/Feuchtigkeit', 'BME680/Temperatur', 'BME680/Luftdruck', 'BME680/Meereshöhe',  'BME680/Gas [Ohm]' ]
 	}
 	return sensor_topics[sensor_str.upper()]
 

@@ -50,6 +50,7 @@ def get_mqtt_connection(mqtt_URL, mqtt_qos, base_topic, wait_secs):
 	print('mqtt LWT_MSG:       > {0} <'.format(MQTT_last_will))
 	
 	mqttc = mqtt_connect.set_MQTT_broker(
+			MQTT_client_name = base_topic,
 			MQTT_broker_name = mqtt_URL,
 			MQTT_Port        = 1883,
 			MQTT_qos         = mqtt_qos,

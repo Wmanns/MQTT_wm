@@ -251,7 +251,7 @@ def main():
 						# print (result, ok, val, '(' + topic + ')')
 						ok = ok and (result == 0)
 						if (result != 0):
-							print(' Error during publishing to MQTT: ' + str(result) + ' == ' \
+							print('\n Error during publishing to MQTT: ' + str(result) + ' == ' \
 							      + get_mqtt_error_message(str(result)) + '; >' + topic + '<'  )
 							sys.stdout.flush()
 							mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
@@ -266,14 +266,16 @@ def main():
 				# print()
 				
 				except Exception as e:
-					print('Error during publishing to MQTT: ' + str(e) + ' == ' + get_mqtt_error_message(str(e)))
+					print('\n Error during publishing to MQTT: ' + str(e) + ' == ' + get_mqtt_error_message(str(e)))
 					mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
 					# continue
 			
 				cnt_ok += 1
 			except Exception as e:
 				cnt_fail  += 1
-				print('\n Error reading sensor data after {:d} consecutive measurements. {:d} measurements in total, {:d} failed. '.format(cnt_ok - 1, cnt_total, cnt_fail), end='')
+				print('Error reading sensor data after {:d} consecutive measurements. \
+				      {:d} measurements in total, {:d} failed. '\
+				      .format(cnt_ok - 1, cnt_total, cnt_fail), end='')
 				# BME280 : soft reset via: Adafruit_BME280._reset()
 				if (cnt_ok - 1 == 0):
 					# Hopefully by reinitializing the >get_sensor_values()< function the device itself is reset.

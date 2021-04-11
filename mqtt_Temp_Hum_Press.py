@@ -30,6 +30,8 @@
 import sys
 import os
 import time
+import math
+
 import mqtt_connect
 
 # Adafruit
@@ -68,7 +70,7 @@ def get_sensor_topics(sensor_str):
 		'BME680': ['Feuchtigkeit', 'Temperatur', 'Luftdruck', 'Meereshöhe',  'Gas [Ohm]' ]
 		}
 	
-	sensor_str = sensor_str.upper()
+	# sensor_str = sensor_str.upper()
 	for cnt, item in enumerate (sensor_topics[sensor_str]):
 		sensor_topics[sensor_str][cnt] = sensor_str + '/' + item
 	
@@ -152,6 +154,37 @@ def get_mqtt_error_message(idx):
 		}
 	return ('"' + errors[idx] + '"')
 
+def get_dew_point_c(t_air_c, rel_humidity):
+	"""Compute the dew point in degrees Celsius
+	:param t_air_c: current ambient temperature in degrees Celsius
+	:type t_air_c: float
+	:param rel_humidity: relative humidity in %
+	:type rel_humidity: float
+	:return: the dew point in degrees Celsius
+	:rtype: float
+	"""
+	# https://community.openhab.org/t/calculating-dew-point-for-demisting-car-window/20927/7
+	# https://community.openhab.org/t/generating-derived-weather-calculations-with-the-weather-calculations-binding/41875
+
+	A = 17.27
+	B = 237.7
+	alpha = ((A * t_air_c) / (B + t_air_c)) + math.log(rel_humidity/100.0)
+	dew_point = (B * alpha) / (A - alpha)
+	
+	dew_point = f'{dew_point:4.1f}'
+	# print ('= ', dew_point)
+	return dew_point
+
+
+def publish_dew_point(sensor_values, mqtt_base_topic, sensor_str, mqttc):
+	temperature_air_c = sensor_values[0]
+	rel_humidity      = sensor_values[1]
+	topic = mqtt_base_topic + '/' + sensor_str + '/Taupunkt'
+	dew_point = get_dew_point_c(temperature_air_c, rel_humidity)
+	(result, mid) = mqttc.publish(topic, dew_point)
+	ok = (result == 0)
+	return ok
+
 
 def main():
 	# print (" python3 ./mqtt_Temp_Hum_Press.py  'Topic'        'Sensor_Type'   GPIO-PIN / address      WAIT_SECONDS")
@@ -183,6 +216,8 @@ def main():
 	get_sensor_values = get_sensor_values_function(sensor_str)
 	# Redirect output according to parameter
 	redirect_stdout_to_dev_null(log_target, log_target_par)
+
+	default_tmp_hum_val = -100
 	
 	try:
 		cnt_total = 1
@@ -192,6 +227,7 @@ def main():
 			try:
 				# print ('Try: read sensor values', end = '')
 				sensor_values = get_sensor_values()
+				# print(sensor_values)
 				cnt_total += 1
 				# print ('ok.')
 				
@@ -199,24 +235,25 @@ def main():
 				try:
 					# print ('Try: publish')
 					# print(time.strftime("%H:%M:%S", time.localtime()))
+					temperature_air_c = default_tmp_hum_val
+					rel_humidity      = default_tmp_hum_val
+					# 'BME280': ['Feuchtigkeit', 'Temperatur', 'Luftdruck', 'Meereshöhe' ],
 					ok = True
 					for val, topic in zip (sensor_values, topics):
 						val   = round(val, 1)
 						topic = mqtt_base_topic + '/' + topic
-						# publish -- nb: a result of 0 indicates success
+						# publish -- nb: result == 0 indicates success
 						(result, mid) = mqttc.publish(topic, val)
 						# print (result, ok, val, '(' + topic + ')')
-						# print (val, ': ' + topic )
 						ok = ok and (result == 0)
 						if (result != 0):
-							# print ('\n Result for MQTT-message != 0: result, val, topic: ', result, ok, val, ' >' + topic + '<')
 							print(' Error during publishing to MQTT: ' + str(result) + ' == ' \
-							      + get_mqtt_error_message(str(result)) \
-							      + '; >' + topic + '<'
-							      )
+							      + get_mqtt_error_message(str(result)) + '; >' + topic + '<'  )
 							sys.stdout.flush()
 							mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
-					
+						
+						ok = ok and publish_dew_point(sensor_values, mqtt_base_topic, sensor_str, mqttc)
+						
 					if not ok:
 						raise ValueError('Result for at least one of various MQTT-messages was not 0.')
 					else:

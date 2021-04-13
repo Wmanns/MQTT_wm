@@ -232,6 +232,7 @@ def main():
 				# print ('Try: read sensor values', end = '')
 				sensor_values = get_sensor_values()
 				# print(sensor_values)
+				current_time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 				cnt_total += 1
 				# print ('ok.')
 				
@@ -259,14 +260,14 @@ def main():
 						ok = ok and publish_dew_point(sensor_values, mqtt_base_topic, sensor_str, mqttc)
 						
 					if not ok:
-						raise ValueError('Result for at least one of various MQTT-messages was not 0.')
+						raise ValueError(current_time_str + ':  Result for at least one of various MQTT-messages was not 0.')
 					else:
 						print ('.', end='')
 						sys.stdout.flush()
 				# print()
 				
 				except Exception as e:
-					print('\n Error during publishing to MQTT: ' + str(e) + ' == ' + get_mqtt_error_message(str(e)))
+					print('\ncurrent_time_str' + ':   Error during publishing to MQTT: ' + str(e) + ' == ' + get_mqtt_error_message(str(e)))
 					mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
 					# continue
 			

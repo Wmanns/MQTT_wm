@@ -174,12 +174,12 @@ def redirect_stdout_to_dev_null(log_target, log_target_par):
 
 def get_mqtt_error_message(idx):
 	errors = {
-		'0': 'Connection successful',
-		'1': 'Connection refused – incorrect protocol version',
-		'2': 'Connection refused – invalid client identifier',
-		'3': 'Connection refused – server unavailable',
-		'4': 'Connection refused – bad username or password',
-		'5': 'Connection refused – not authorised'
+		'mqtt: 0': 'Connection successful',
+		'mqtt: 1': 'Connection refused – incorrect protocol version',
+		'mqtt: 2': 'Connection refused – invalid client identifier',
+		'mqtt: 3': 'Connection refused – server unavailable',
+		'mqtt: 4': 'Connection refused – bad username or password',
+		'mqtt: 5': 'Connection refused – not authorised'
 		}
 	return ('"' + errors[idx] + '"')
 
@@ -233,6 +233,7 @@ def main():
 	if (len(sys.argv) < par_cnt):
 		print_usage_message()
 		raise  ValueError("\nMissing parameters?\n")
+
 	
 	mqtt_URL        = sys.argv[mqtt_URL_par]
 	mqtt_base_topic = sys.argv[mqtt_base_topic_par]

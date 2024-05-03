@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+# $timestamp$
 
 # git clone https://github.com/Wmanns/MQTT_wm.git
 # Raspberry:
@@ -45,7 +46,23 @@ def print_usage_message():
 	print (" ------- ------------------------  --------  -----        -----------   -------      -----")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  topic        bme280        stdout       60")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  $(hostname)  bme680        null          5")
+	print ()
+	print ('Examples:')
+	print (" python3 ./mqtt_Temp_Hum_Press.py
+                                               rh-rb3-testsys
+	                                                      rb3/tele/moode-USB/BME280
+	                                                                  bme280
+	                                                                                   null
+	                                                                                                5")
 
+
+#            python3 ./mqtt_Temp_Hum_Press.py
+#                                              rh-rb3-testsys
+#                                                        rb3/tele/moode-USB/BME280
+#                                                                     bme280
+#                                                                                    null
+#                                                                                                 5
+#
 
 def get_mqtt_connection(mqtt_URL, mqtt_qos, base_topic, wait_secs):
 	MQTT_last_will = base_topic + '/LWT: ' +  base_topic # Create the last-will-and-testament topic
@@ -66,9 +83,21 @@ def get_sensor_topics(sensor_str):
 	sensor_topics = {
 		'DHT11' : ['Feuchtigkeit', 'Temperatur'],
 		'DHT22' : ['Feuchtigkeit', 'Temperatur'],
-		'BME280': ['Temperatur', 'Feuchtigkeit', 'Luftdruck', 'Meereshöhe' ],
-		'BME680': ['Temperatur', 'Feuchtigkeit', 'Luftdruck', 'Meereshöhe',  'Gas [Ohm]' ]
-		}
+		# 'BME280': ['Temperatur', 'Feuchtigkeit', 'Luftdruck', 'Meereshöhe' ],
+		'BME280': ["Time", "Temperature", "Humidity", "DewPoint", "Pressure"],                   # tasmota
+		# 'BME680': ['Temperatur', 'Feuchtigkeit', 'Luftdruck', 'Meereshöhe',  'Gas [Ohm]' ]
+		'BME680': ["Temperature", "Humidity", "Pressure", "Altitude", "Gas"]}
+	
+		# vals = (bme680.temperature,
+		#         bme680.relative_humidity,
+		#         bme680.pressure,
+		#         bme680.altitude,
+		#         bme680.gas)
+
+	# SENSOR = {"Time": "2022-11-10T22:56:20", "temperature": 29.29, "humidity": 27.66, "pressure": 968.56, "gas": 13401.5}
+	# https://stackoverflow.com/questions/60297131/how-to-convert-a-list-to-json-in-python
+	# https://stackoverflow.com/questions/71979765/how-to-convert-python-list-to-json-array
+	
 	
 	# sensor_str = sensor_str.upper()
 	for cnt, item in enumerate (sensor_topics[sensor_str]):
@@ -163,6 +192,8 @@ def get_dew_point_c(t_air_c, rel_humidity):
 	:return: the dew point in degrees Celsius
 	:rtype: float
 	"""
+	# https://www.meteo-blog.net/2012-05/dewpoint-calculation-script-in-python/
+	
 	# https://community.openhab.org/t/calculating-dew-point-for-demisting-car-window/20927/7
 	# https://community.openhab.org/t/generating-derived-weather-calculations-with-the-weather-calculations-binding/41875
 
@@ -181,7 +212,7 @@ def publish_dew_point(sensor_values, mqtt_base_topic, sensor_str, mqttc):
 	rel_humidity      = sensor_values[1]
 	if  (temperature_air_c > -30.0) and (temperature_air_c < 70.0) and \
 		(rel_humidity > 0.0) and (rel_humidity < 100.1):
-		topic = mqtt_base_topic + '/' + sensor_str + '/Taupunkt'
+		topic = mqtt_base_topic + '/' + sensor_str + '/DewPoint'
 		dew_point = get_dew_point_c(temperature_air_c, rel_humidity)
 		(result, mid) = mqttc.publish(topic, dew_point)
 		ok = (result == 0)
@@ -218,9 +249,11 @@ def main():
 	mqttc = get_mqtt_connection(mqtt_URL, mqtt_qos = 1, base_topic = mqtt_base_topic, wait_secs = 5)
 	# Get sensor function
 	get_sensor_values = get_sensor_values_function(sensor_str)
-	# Redirect output according to parameter
+	# Redirect output according to parameter:
+	print ("redirect_stdout_to_dev_null: before ")
 	redirect_stdout_to_dev_null(log_target, log_target_par)
-
+	print ("redirect_stdout_to_dev_null: after ")
+	
 	default_tmp_hum_val = -100
 	
 	try:
@@ -229,9 +262,9 @@ def main():
 		cnt_ok    = 1
 		while True:
 			try:
-				# print ('Try: read sensor values', end = '')
+				print ('Try: read sensor values', end = '')
 				sensor_values = get_sensor_values()
-				# print(sensor_values)
+				print(sensor_values)
 				current_time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 				cnt_total += 1
 				# print ('ok.')

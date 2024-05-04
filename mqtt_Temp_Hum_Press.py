@@ -131,7 +131,8 @@ def get_sensor_values_function(sensor_str):
 	# pip3 install Adafruit-DHT
 	
 	elif sensor_str == 'BME280':
-		import adafruit_bme280
+		# import adafruit_bme280
+		from adafruit_bme280 import basic as adafruit_bme280
 		i2c = busio.I2C(board.SCL, board.SDA)
 		bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
 		bme280.sea_level_pressure = 1013.25
@@ -145,7 +146,8 @@ def get_sensor_values_function(sensor_str):
 		return get_bme280_values   # KEINE KLAMMERN! => Funktion wird zurückgegeben !
 	
 	elif sensor_str == 'BME680':
-		import adafruit_bme680
+		# import adafruit_bme680
+		from adafruit_bme680 import basic as adafruit_bme680
 		i2c = busio.I2C(board.SCL, board.SDA)
 		# print ('i2c = ', i2c)
 		bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c, debug=False, address=0x76)

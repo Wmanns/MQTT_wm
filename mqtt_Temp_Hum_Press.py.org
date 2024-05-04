@@ -1,4 +1,4 @@
-#!/usr/bin/python3 
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # $timestamp$
 
@@ -41,22 +41,19 @@ import digitalio
 import busio
 
 def print_usage_message():
-	print ("\n\n Usage: script needs parameters: \n")
+	print ("\n\n Usage: ")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  Topic        Sensor_Type   log_target   Delay")
 	print (" ------- ------------------------  --------  -----        -----------   -------      -----")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  topic        bme280        stdout       60")
 	print (" python3 ./mqtt_Temp_Hum_Press.py  MQTT-URL  $(hostname)  bme680        null          5")
 	print ()
-	print ('Example:')
-	print (" python3 ./mqtt_Temp_Hum_Press.py")
-	print ("                                   rh-rb3-testsys")
-	print ("                                             rb3/tele/moode-USB/BME280")
-	print ("                                                          bme280")
-	print ("	                                                                null")
-	print ("	                                                                              5")
-	print ()
-	print (" python3 ./mqtt_Temp_Hum_Press.py  rh-rb3-testsys  rb3/tele/moode-USB/BME280 bme280 null 5")
-	print ("\n")
+	print ('Examples:')
+	print (" python3 ./mqtt_Temp_Hum_Press.py \
+                                               rh-rb3-testsys \
+	                                                      rb3/tele/moode-USB/BME280 \
+	                                                                  bme280 \
+	                                                                                   null \
+	                                                                                                5")
 
 
 #            python3 ./mqtt_Temp_Hum_Press.py
@@ -86,10 +83,10 @@ def get_sensor_topics(sensor_str):
 	sensor_topics = {
 		'DHT11' : ['Feuchtigkeit', 'Temperatur'],
 		'DHT22' : ['Feuchtigkeit', 'Temperatur'],
-		'BME280': ["Time", "Temperature", "Humidity", "DewPoint", "Pressure"],                   # tasmota
-		'BME680': ["Temperature", "Humidity", "Pressure", "Altitude", "Gas"]}
 		# 'BME280': ['Temperatur', 'Feuchtigkeit', 'Luftdruck', 'Meereshöhe' ],
+		'BME280': ["Time", "Temperature", "Humidity", "DewPoint", "Pressure"],                   # tasmota
 		# 'BME680': ['Temperatur', 'Feuchtigkeit', 'Luftdruck', 'Meereshöhe',  'Gas [Ohm]' ]
+		'BME680': ["Temperature", "Humidity", "Pressure", "Altitude", "Gas"]}
 	
 		# vals = (bme680.temperature,
 		#         bme680.relative_humidity,
@@ -134,6 +131,7 @@ def get_sensor_values_function(sensor_str):
 		import adafruit_bme280
 		i2c = busio.I2C(board.SCL, board.SDA)
 		bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
+	#   bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c)
 		bme280.sea_level_pressure = 1013.25
 		def get_bme280_values():
 			vals = (bme280.temperature,
